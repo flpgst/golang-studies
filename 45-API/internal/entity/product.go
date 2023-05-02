@@ -11,14 +11,14 @@ var (
 	ErrIDIsRequired    = errors.New("id is required")
 	ErrInvalidID       = errors.New("invalid id")
 	ErrNameIsRequired  = errors.New("name is required")
-	ErrPriceIsRequired = errors.New("proce is required")
+	ErrPriceIsRequired = errors.New("price is required")
 	ErrInvalidPrice    = errors.New("invalid price")
 )
 
 type Product struct {
 	ID        entity.ID `json:"id"`
 	Name      string    `json:"name"`
-	Price     float64   `json:"proce"`
+	Price     float64   `json:"price"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
