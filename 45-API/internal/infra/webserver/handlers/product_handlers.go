@@ -7,7 +7,7 @@ import (
 
 	"github.com/flpgst/golang-studies/45-API/internal/dto"
 	"github.com/flpgst/golang-studies/45-API/internal/entity"
-	"github.com/flpgst/golang-studies/45-API/internal/entity/infra/database"
+	"github.com/flpgst/golang-studies/45-API/internal/infra/database"
 	entityPkg "github.com/flpgst/golang-studies/45-API/pkg/entity"
 	"github.com/go-chi/chi/v5"
 )
@@ -22,6 +22,17 @@ func NewProductHandler(db database.ProductInterface) *ProductHandler {
 	}
 }
 
+// Create product godoc
+// @Summary      Create product
+// @Description  Create product
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        request	body	dto.CreateProductInput	true	"Create product request"
+// @Success      201
+// @Failure      500  {object}  Error
+// @Router       /products [post]
+// @Security     ApiKeyAuth
 func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var product dto.CreateProductInput
 	err := json.NewDecoder(r.Body).Decode(&product)
@@ -42,6 +53,18 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// List products godoc
+// @Summary      List product
+// @Description  List product
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        page		query	string	false	"page number"
+// @Param        limit		query	string	false	"limit"
+// @Success      200		{array}  entity.Product
+// @Failure      500  		{object}  Error
+// @Router       /products [get]
+// @Security     ApiKeyAuth
 func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	page := r.URL.Query().Get("page")
 	limit := r.URL.Query().Get("limit")
@@ -64,6 +87,18 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(products)
 }
 
+// Get product godoc
+// @Summary      Get product
+// @Description  Get product
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        id		path	string	true	"product id"	Format(uuid)
+// @Success      200		{object}  entity.Product
+// @Failure      404  		{object}  Error
+// @Failure      500  		{object}  Error
+// @Router       /products/{id} [get]
+// @Security     ApiKeyAuth
 func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
@@ -80,6 +115,18 @@ func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(product)
 }
 
+// Update product godoc
+// @Summary      Update product
+// @Description  Update product
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        id		path	string	true	"product id"	Format(uuid)
+// @Param        request	body	dto.CreateProductInput	true	"update product request"
+// @Success      200
+// @Failure      500  {object}  Error
+// @Router       /products/{id} [put]
+// @Security     ApiKeyAuth
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
@@ -88,6 +135,10 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	var product entity.Product
 	err := json.NewDecoder(r.Body).Decode(&product)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	product.ID, err = entityPkg.ParseID(id)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -106,6 +157,18 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Delete product godoc
+// @Summary      Delete product
+// @Description  Delete product
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        id		path	string	true	"product id"	Format(uuid)
+// @Success      200
+// @Failure      404  {object}  Error
+// @Failure      500  {object}  Error
+// @Router       /products/{id} [delete]
+// @Security     ApiKeyAuth
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {

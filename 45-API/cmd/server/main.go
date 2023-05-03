@@ -5,16 +5,35 @@ import (
 	"net/http"
 
 	"github.com/flpgst/golang-studies/45-API/configs"
+	_ "github.com/flpgst/golang-studies/45-API/docs"
 	"github.com/flpgst/golang-studies/45-API/internal/entity"
-	"github.com/flpgst/golang-studies/45-API/internal/entity/infra/database"
-	"github.com/flpgst/golang-studies/45-API/internal/entity/infra/webserver/handlers"
+	"github.com/flpgst/golang-studies/45-API/internal/infra/database"
+	"github.com/flpgst/golang-studies/45-API/internal/infra/webserver/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
+// @title 				GoExpert Example API
+// @version 			1.0
+// @description 		This is a sample server Petstore server.
+// @termsOfService 		http://swagger.io/terms/
+
+// @contact.name 		Filipe Augusto Gonçalves
+// @contact.url 		http://www.swagger.io/support
+// @contact.email 		flpgst@gmail.com
+
+// @license.name 		NoLicense
+// @license.url 		http://noLicense.nolicense
+
+// @host 				localhost:8000
+// @BasePath 			/
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	configs, err := configs.LoadConfig(".")
 	if err != nil {
@@ -48,6 +67,10 @@ func main() {
 
 	r.Post("/users", userHandler.CreateUser)
 	r.Post("/users/generate_token", userHandler.GetJWT)
+
+	r.Get("/docs/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8000/docs/doc.json"),
+	))
 
 	http.ListenAndServe(":8000", r)
 }
