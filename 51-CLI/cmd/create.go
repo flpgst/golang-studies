@@ -4,47 +4,36 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/flpgst/golang-studies/51-CLI/internal/database"
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the create command
-var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		fmt.Println("name:", category)
-		exists, _ := cmd.Flags().GetBool("exists")
-		fmt.Println("exists:", exists)
-		id, _ := cmd.Flags().GetInt16("id")
-		fmt.Println("id:", id)
-	},
-	PreRun: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Chama antes do run")
-	},
-	PostRun: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Chama depois do run")
-	},
-	// RunE: func(cmd *cobra.Command, args []string) error {
-	// 	return fmt.Errorf("ocorreu um erro")
-	// },
+func newCreateCmd(categoryDb database.Category) *cobra.Command {
+	return &cobra.Command{
+		Use:   "create",
+		Short: "Create new category",
+		Long:  "Create new category",
+		RunE:  runCreate(categoryDb),
+	}
 }
 
-var category string
+func runCreate(categoryDB database.Category) RunEFunc {
+	return func(cmd *cobra.Command, args []string) error {
+		name, _ := cmd.Flags().GetString("name")
+		description, _ := cmd.Flags().GetString("description")
+		_, err := categoryDB.Create(name, description)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
 
 func init() {
+	createCmd := newCreateCmd(GetCategoryDB(GetDB()))
 	categoryCmd.AddCommand(createCmd)
-	createCmd.Flags().StringVarP(&category, "name", "n", "", "category name")
-	createCmd.Flags().BoolP("exists", "e", false, "category exists")
-	createCmd.Flags().Int16P("id", "i", 0, "category id")
+	createCmd.Flags().StringP("name", "n", "", "category name")
+	createCmd.Flags().StringP("description", "d", "", "category description")
 
 	// Here you will define your flags and configuration settings.
 
