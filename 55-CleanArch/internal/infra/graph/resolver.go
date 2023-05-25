@@ -8,4 +8,5 @@ import "github.com/flpgst/golang-studies/55-CleanArch/internal/usecase"
 
 type Resolver struct {
 	CreateOrderUseCase usecase.CreateOrderUseCase
+	ListOrderUseCase   *usecase.ListOrderUseCase
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/flpgst/golang-studies/55-CleanArch/internal/dto"
 	"github.com/flpgst/golang-studies/55-CleanArch/internal/entity"
 	"github.com/flpgst/golang-studies/55-CleanArch/internal/usecase"
 	"github.com/flpgst/golang-studies/55-CleanArch/pkg/events"
@@ -28,7 +29,7 @@ func NewWebOrderHandler(
 }
 
 func (h *WebOrderHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var dto usecase.OrderInputDTO
+	var dto dto.OrderInputDTO
 	err := json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -46,5 +47,17 @@ func (h *WebOrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
 
+func (h *WebOrderHandler) List(w http.ResponseWriter, r *http.Request) {
+	output, err := usecase.NewListOrderUseCase(h.OrderRepository).Execute()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(output)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

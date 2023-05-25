@@ -27,3 +27,20 @@ func (r *OrderRepository) Save(order *entity.Order) error {
 	}
 	return nil
 }
+
+func (r *OrderRepository) List() ([]entity.Order, error) {
+	rows, err := r.Db.Query("SELECT * FROM orders")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var orders []entity.Order
+	for rows.Next() {
+		var order entity.Order
+		if err := rows.Scan(&order.ID, &order.Price, &order.Tax, &order.FinalPrice); err != nil {
+			return nil, err
+		}
+		orders = append(orders, order)
+	}
+	return orders, nil
+}

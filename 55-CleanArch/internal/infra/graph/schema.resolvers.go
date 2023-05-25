@@ -6,15 +6,14 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/flpgst/golang-studies/55-CleanArch/internal/dto"
 	"github.com/flpgst/golang-studies/55-CleanArch/internal/infra/graph/model"
-	"github.com/flpgst/golang-studies/55-CleanArch/internal/usecase"
 )
 
 // CreateOrder is the resolver for the createOrder field.
 func (r *mutationResolver) CreateOrder(ctx context.Context, input *model.OrderInput) (*model.Order, error) {
-	dto := usecase.OrderInputDTO{
+	dto := dto.OrderInputDTO{
 		ID:    input.ID,
 		Price: float64(input.Price),
 		Tax:   float64(input.Tax),
@@ -31,9 +30,22 @@ func (r *mutationResolver) CreateOrder(ctx context.Context, input *model.OrderIn
 	}, nil
 }
 
-// ListOrder is the resolver for the listOrder field.
-func (r *queryResolver) ListOrder(ctx context.Context) ([]*model.Order, error) {
-	panic(fmt.Errorf("not implemented: ListOrder - listOrder"))
+// ListOrders is the resolver for the listOrders field.
+func (r *queryResolver) ListOrders(ctx context.Context) ([]*model.Order, error) {
+	output, err := r.ListOrderUseCase.Execute()
+	if err != nil {
+		return nil, err
+	}
+	var orders []*model.Order
+	for _, o := range output {
+		orders = append(orders, &model.Order{
+			ID:         o.ID,
+			Price:      float64(o.Price),
+			Tax:        float64(o.Tax),
+			FinalPrice: float64(o.FinalPrice),
+		})
+	}
+	return orders, nil
 }
 
 // Mutation returns MutationResolver implementation.
