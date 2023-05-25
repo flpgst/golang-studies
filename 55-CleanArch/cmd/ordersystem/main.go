@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 
 	graphql_handler "github.com/99designs/gqlgen/graphql/handler"
@@ -11,9 +12,13 @@ import (
 	"github.com/flpgst/golang-studies/55-CleanArch/configs"
 	"github.com/flpgst/golang-studies/55-CleanArch/internal/event/handler"
 	"github.com/flpgst/golang-studies/55-CleanArch/internal/infra/graph"
+	"github.com/flpgst/golang-studies/55-CleanArch/internal/infra/grpc/pb"
+	"github.com/flpgst/golang-studies/55-CleanArch/internal/infra/grpc/service"
 	"github.com/flpgst/golang-studies/55-CleanArch/internal/infra/web/webserver"
 	"github.com/flpgst/golang-studies/55-CleanArch/pkg/events"
 	"github.com/streadway/amqp"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -43,6 +48,18 @@ func main() {
 	webserver.AddHandler("/order", webOrderHandler.Create)
 	fmt.Println("Listening on port", configs.WebServerPort)
 	go webserver.Start()
+
+	grpcServer := grpc.NewServer()
+	createOrderService := service.NewOrderService(*createOrderUseCase)
+	pb.RegisterOrderServiceServer(grpcServer, createOrderService)
+	reflection.Register(grpcServer)
+
+	fmt.Println("Listening GRPC server on port", configs.GRPCServerPort)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", configs.GRPCServerPort))
+	if err != nil {
+		panic(err)
+	}
+	go grpcServer.Serve(lis)
 
 	srv := graphql_handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		CreateOrderUseCase: *createOrderUseCase,
